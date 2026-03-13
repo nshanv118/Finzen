@@ -893,8 +893,9 @@ async function handleModernAIChat() {
         appendMessage('bot', response.reply);
     } catch (e) {
         removeTypingIndicator(typingId);
-        appendMessage('bot', "I'm having a bit of trouble connecting to my brain. Please try again later! 🧠");
-        console.error(e);
+        const errorText = e.message || "I'm having a bit of trouble connecting to my brain.";
+        appendMessage('bot', `${errorText} 🧠`);
+        console.error("Chat Error:", e);
     }
 }
 

@@ -30,15 +30,29 @@ const api = {
             }
         };
 
+        const fullUrl = `${API_URL}${endpoint}`;
+        console.log(`[API Request] ${options.method || 'GET'} ${fullUrl}`, config);
+
         try {
-            const response = await fetch(`${API_URL}${endpoint}`, config);
+            // Increase timeout for AI requests
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+            const response = await fetch(fullUrl, {
+                ...config,
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            console.log(`[API Response] ${response.status} ${response.statusText}`);
+            
             const data = await response.json();
             if (!response.ok) {
                 let errorMsg = 'An error occurred. Please try again.';
                 
                 if (data && data.detail) {
                     if (Array.isArray(data.detail)) {
-                        // FastAPI 422 Validation Error array
                         errorMsg = data.detail.map(err => err.msg).join(', ');
                     } else if (typeof data.detail === 'string') {
                         errorMsg = data.detail;
@@ -47,11 +61,16 @@ const api = {
                     }
                 }
                 
+                console.error(`[API Error] Status ${response.status}:`, errorMsg);
                 throw new Error(errorMsg);
             }
             return data;
         } catch (error) {
-            console.error('API Error:', error);
+            if (error.name === 'AbortError') {
+                console.error('API Error: Request timed out after 30s');
+                throw new Error('Request timed out. Please try again.');
+            }
+            console.error('API Error Details:', error);
             throw error;
         }
     },
