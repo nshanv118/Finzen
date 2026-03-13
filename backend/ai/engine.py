@@ -4,7 +4,7 @@ import json
 
 def get_mistral_response(messages, model="mistral-large-latest", temperature=0.4):
     """Fallback to direct REST API calls for better reliability in different environments."""
-    api_key = os.getenv("OQ6tR5WAmMOXjMHSfj0JJwtdGRgkqxaB")
+    api_key = os.getenv(OQ6tR5WAmMOXjMHSfj0JJwtdGRgkqxaB)
     if not api_key:
         return "⚠️ Error: MISTRAL_API_KEY is missing."
     
